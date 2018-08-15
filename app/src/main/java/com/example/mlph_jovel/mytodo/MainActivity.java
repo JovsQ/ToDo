@@ -1,5 +1,6 @@
 package com.example.mlph_jovel.mytodo;
 
+import android.arch.persistence.room.Room;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
@@ -15,6 +16,10 @@ import android.view.MenuItem;
 
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
+
+    private static final String DATABASE_NAME = "movies_db";
+
+    private MovieDatabase movieDatabase;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -40,6 +45,11 @@ public class MainActivity extends AppCompatActivity
 
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
+
+        movieDatabase =
+                Room.databaseBuilder(getApplicationContext(), MovieDatabase.class, DATABASE_NAME)
+                .fallbackToDestructiveMigration()
+                .build();
     }
 
     @Override
