@@ -1,25 +1,27 @@
 package com.example.mlph_jovel.mytodo;
 
+import android.arch.persistence.room.Dao;
 import android.arch.persistence.room.Delete;
 import android.arch.persistence.room.Insert;
+import android.arch.persistence.room.OnConflictStrategy;
 import android.arch.persistence.room.Query;
-import android.arch.persistence.room.Update;
 
 import java.util.List;
 
-public interface DaoAccess {
+@Dao
+public interface MovieDao {
 
-    @Insert
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
     void insertOnlySingleMovie(Movies movie);
 
-    @Insert
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
     void insertMultipleMovies(List<Movies> moviesList);
 
     @Query("SELECT * FROM Movies WHERE movieId = :movieId")
-    Movies fetchMoviesByMovieId(int movieId);
+    Movies fetchMoviesByMovieId(String movieId);
 
-    @Update
-    void updateMovie(Movies movies);
+    @Query("SELECT COUNT(*) FROM Movies")
+    Long count();
 
     @Delete
     void deleteMovie(Movies movies);

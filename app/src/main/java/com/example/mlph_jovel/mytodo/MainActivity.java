@@ -14,12 +14,14 @@ import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
 
+import com.example.mlph_jovel.mytodo.database.AppDatabase;
+
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
 
     private static final String DATABASE_NAME = "movies_db";
 
-    private MovieDatabase movieDatabase;
+    private AppDatabase appDatabase;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -45,11 +47,6 @@ public class MainActivity extends AppCompatActivity
 
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
-
-        movieDatabase =
-                Room.databaseBuilder(getApplicationContext(), MovieDatabase.class, DATABASE_NAME)
-                .fallbackToDestructiveMigration()
-                .build();
     }
 
     @Override
