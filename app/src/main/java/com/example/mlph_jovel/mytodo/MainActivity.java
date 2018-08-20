@@ -2,41 +2,40 @@ package com.example.mlph_jovel.mytodo;
 
 import android.arch.persistence.room.Room;
 import android.content.Context;
-import android.graphics.Movie;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
-import android.support.v7.widget.LinearLayoutManager;
-import android.support.v7.widget.RecyclerView;
-import android.util.Log;
-import android.view.View;
 import android.support.design.widget.NavigationView;
+import android.support.design.widget.Snackbar;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.ListView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.mlph_jovel.mytodo.database.AppDatabase;
-import com.example.mlph_jovel.mytodo.interfaces.AsyncInterface;
-import com.example.mlph_jovel.mytodo.interfaces.FetchInterface;
 
 import java.util.ArrayList;
 import java.util.List;
 
+import io.reactivex.Observable;
+import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.schedulers.Schedulers;
+
 public class MainActivity extends AppCompatActivity
-        implements NavigationView.OnNavigationItemSelectedListener, View.OnClickListener,
-        AsyncInterface, FetchInterface {
+        implements NavigationView.OnNavigationItemSelectedListener, View.OnClickListener {
 
     private static final String DATABASE_NAME = "movies_db";
     private static final String TAG = "ROOM TESTING";
@@ -68,7 +67,7 @@ public class MainActivity extends AppCompatActivity
                 .fallbackToDestructiveMigration()
                 .build();
 
-        showLocal();
+        fetchMovies();
     }
 
     private void initToolbar() {
@@ -113,8 +112,7 @@ public class MainActivity extends AppCompatActivity
         rvMovies.setAdapter(adapter);
     }
 
-    @Override
-    public void saveFinished(Movies movie) {
+    private void finishedSaving(Movies movie) {
         Toast.makeText(this, "Movie saved!", Toast.LENGTH_LONG).show();
         moviesList.add(movie);
         rvMovies.getAdapter().notifyDataSetChanged();
@@ -123,61 +121,14 @@ public class MainActivity extends AppCompatActivity
 
         InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
         imm.hideSoftInputFromWindow(etMovie.getWindowToken(), 0);
-
     }
 
-    @Override
-    public void fetchCompleted(List<Movies> listMovies) {
+    private void displayMovies(List<Movies> listMovies) {
         moviesList.clear();
         moviesList.addAll(listMovies);
         rvMovies.getAdapter().notifyDataSetChanged();
         Toast.makeText(this, "Movies length: " + listMovies.size(), Toast.LENGTH_LONG)
                 .show();
-    }
-
-    private class AsyncTaskRunner extends AsyncTask<Movies, String, Movies> {
-        AsyncInterface asyncInterface = null;
-
-
-        @Override
-        protected Movies doInBackground(Movies... movies) {
-            appDatabase.movieDao().insertOnlySingleMovie(movies[0]);
-
-            return movies[0];
-        }
-
-        @Override
-        protected void onPreExecute() {
-            pbLoading.setVisibility(View.VISIBLE);
-        }
-
-        @Override
-        protected void onPostExecute(Movies movies) {
-            asyncInterface.saveFinished(movies);
-            pbLoading.setVisibility(View.GONE);
-        }
-    }
-
-    private class FetchTaskRunner extends AsyncTask<Void, Void, List<Movies>> {
-
-        FetchInterface fetchInterface = null;
-
-        @Override
-        protected void onPreExecute() {
-            pbLoading.setVisibility(View.VISIBLE);
-        }
-
-        @Override
-        protected List<Movies> doInBackground(Void... voids) {
-            List<Movies> moviesList = appDatabase.movieDao().fetchAllMovies();
-            return moviesList;
-        }
-
-        @Override
-        protected void onPostExecute(List<Movies> movies) {
-            pbLoading.setVisibility(View.GONE);
-            fetchInterface.fetchCompleted(movies);
-        }
     }
 
     @Override
@@ -239,10 +190,12 @@ public class MainActivity extends AppCompatActivity
     public void onClick(View v) {
         switch (v.getId()) {
             case R.id.btn_add:
-                addMovie();
+//                addMovie();
+                saveMovie();
                 break;
             case R.id.btn_show:
-                showLocal();
+//                showLocal();
+                fetchMovies();
                 break;
             case R.id.fab:
                 showSnackBar(v, "Replace with action");
@@ -254,22 +207,25 @@ public class MainActivity extends AppCompatActivity
         Snackbar.make(view, message, Snackbar.LENGTH_LONG).show();
     }
 
-    private void showLocal() {
-        FetchTaskRunner fetchTaskRunner = new FetchTaskRunner();
-        fetchTaskRunner.fetchInterface = this;
-        fetchTaskRunner.execute();
-
+    private void fetchMovies() {
+        Observable.fromCallable(() -> appDatabase.movieDao().fetchAllMovies())
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe((result) -> displayMovies(result));
     }
 
-    private void addMovie() {
+    private void saveMovie() {
         String movie = etMovie.getText().toString();
-
-        if (movie.length() > 0){
+        if (movie.length() > 0) {
             Movies movies = new Movies(generateId(), movie);
 
-            AsyncTaskRunner asyncTaskRunner = new AsyncTaskRunner();
-            asyncTaskRunner.asyncInterface = this;
-            asyncTaskRunner.execute(movies);
+            Observable.fromCallable(() -> {
+                appDatabase.movieDao().insertOnlySingleMovie(movies);
+                return movies;
+            })
+                    .subscribeOn(Schedulers.io())
+                    .observeOn(AndroidSchedulers.mainThread())
+                    .subscribe((result) -> finishedSaving(result));
         }
     }
 
