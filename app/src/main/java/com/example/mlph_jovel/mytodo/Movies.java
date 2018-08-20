@@ -14,6 +14,11 @@ public class Movies {
 
     public Movies() {}
 
+    public Movies(String movieId, String movieName) {
+        this.movieId = movieId;
+        this.movieName = movieName;
+    }
+
     @NonNull
     public String getMovieId() {
         return movieId;

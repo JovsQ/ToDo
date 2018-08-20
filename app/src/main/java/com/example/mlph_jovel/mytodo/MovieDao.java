@@ -20,6 +20,9 @@ public interface MovieDao {
     @Query("SELECT * FROM Movies WHERE movieId = :movieId")
     Movies fetchMoviesByMovieId(String movieId);
 
+    @Query("SELECT * FROM Movies")
+    List<Movies> fetchAllMovies();
+
     @Query("SELECT COUNT(*) FROM Movies")
     Long count();
 
