@@ -1,10 +1,10 @@
-package com.example.mlph_jovel.mytodo;
+package com.example.mlph_jovel.mytodo.movies.model;
 
 import android.arch.persistence.room.Entity;
 import android.arch.persistence.room.PrimaryKey;
 import android.support.annotation.NonNull;
 
-@Entity
+@Entity(tableName = "movies")
 public class Movies {
 
     @NonNull
@@ -36,3 +36,4 @@ public class Movies {
         this.movieName = movieName;
     }
 }
+

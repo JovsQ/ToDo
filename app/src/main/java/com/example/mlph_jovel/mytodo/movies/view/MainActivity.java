@@ -1,8 +1,7 @@
-package com.example.mlph_jovel.mytodo;
+package com.example.mlph_jovel.mytodo.movies.view;
 
-import android.arch.persistence.room.Room;
+import android.arch.lifecycle.ViewModelProviders;
 import android.content.Context;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.NavigationView;
@@ -25,7 +24,10 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.example.mlph_jovel.mytodo.R;
 import com.example.mlph_jovel.mytodo.database.AppDatabase;
+import com.example.mlph_jovel.mytodo.movies.model.Movies;
+import com.example.mlph_jovel.mytodo.movies.viewmodel.MoviesViewModel;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -37,10 +39,7 @@ import io.reactivex.schedulers.Schedulers;
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener, View.OnClickListener {
 
-    private static final String DATABASE_NAME = "movies_db";
     private static final String TAG = "ROOM TESTING";
-
-    private AppDatabase appDatabase;
 
     private Toolbar toolbar;
     private DrawerLayout drawerLayout;
@@ -52,6 +51,8 @@ public class MainActivity extends AppCompatActivity
 
     private List<Movies> moviesList;
 
+    private MoviesViewModel moviesViewModel;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -62,12 +63,6 @@ public class MainActivity extends AppCompatActivity
         initViews();
         initList();
 
-        appDatabase = Room.databaseBuilder(getApplicationContext(), AppDatabase.class,
-                DATABASE_NAME)
-                .fallbackToDestructiveMigration()
-                .build();
-
-        fetchMovies();
     }
 
     private void initToolbar() {
@@ -83,16 +78,14 @@ public class MainActivity extends AppCompatActivity
         drawerLayout.addDrawerListener(toggle);
         toggle.syncState();
 
-        NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
+        NavigationView navigationView = findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
     }
 
     private void initViews() {
         Button btnAddMovie = findViewById(R.id.btn_add);
-        Button btnShow = findViewById(R.id.btn_show);
         FloatingActionButton fab = findViewById(R.id.fab);
         btnAddMovie.setOnClickListener(this);
-        btnShow.setOnClickListener(this);
         fab.setOnClickListener(this);
 
         etMovie = findViewById(R.id.et_movies);
@@ -110,25 +103,21 @@ public class MainActivity extends AppCompatActivity
         MoviesListAdapter adapter = new MoviesListAdapter(moviesList);
         rvMovies.setLayoutManager(new LinearLayoutManager(this));
         rvMovies.setAdapter(adapter);
+
+        moviesViewModel = ViewModelProviders.of(this).get(MoviesViewModel.class);
+        moviesViewModel.getMovies().observe(this, movies -> {
+            moviesList.clear();
+            moviesList.addAll(movies);
+        });
     }
 
     private void finishedSaving(Movies movie) {
         Toast.makeText(this, "Movie saved!", Toast.LENGTH_LONG).show();
-        moviesList.add(movie);
-        rvMovies.getAdapter().notifyDataSetChanged();
         etMovie.setText("");
         tvLabel.requestFocus();
 
         InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
         imm.hideSoftInputFromWindow(etMovie.getWindowToken(), 0);
-    }
-
-    private void displayMovies(List<Movies> listMovies) {
-        moviesList.clear();
-        moviesList.addAll(listMovies);
-        rvMovies.getAdapter().notifyDataSetChanged();
-        Toast.makeText(this, "Movies length: " + listMovies.size(), Toast.LENGTH_LONG)
-                .show();
     }
 
     @Override
@@ -190,12 +179,7 @@ public class MainActivity extends AppCompatActivity
     public void onClick(View v) {
         switch (v.getId()) {
             case R.id.btn_add:
-//                addMovie();
                 saveMovie();
-                break;
-            case R.id.btn_show:
-//                showLocal();
-                fetchMovies();
                 break;
             case R.id.fab:
                 showSnackBar(v, "Replace with action");
@@ -207,20 +191,13 @@ public class MainActivity extends AppCompatActivity
         Snackbar.make(view, message, Snackbar.LENGTH_LONG).show();
     }
 
-    private void fetchMovies() {
-        Observable.fromCallable(() -> appDatabase.movieDao().fetchAllMovies())
-                .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe((result) -> displayMovies(result));
-    }
-
     private void saveMovie() {
         String movie = etMovie.getText().toString();
         if (movie.length() > 0) {
             Movies movies = new Movies(generateId(), movie);
 
             Observable.fromCallable(() -> {
-                appDatabase.movieDao().insertOnlySingleMovie(movies);
+                AppDatabase.getDatabaseInstance(this).movieDao().insertOnlySingleMovie(movies);
                 return movies;
             })
                     .subscribeOn(Schedulers.io())

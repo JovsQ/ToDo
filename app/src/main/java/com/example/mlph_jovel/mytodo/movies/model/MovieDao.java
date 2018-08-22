@@ -1,5 +1,6 @@
-package com.example.mlph_jovel.mytodo;
+package com.example.mlph_jovel.mytodo.movies.model;
 
+import android.arch.lifecycle.LiveData;
 import android.arch.persistence.room.Dao;
 import android.arch.persistence.room.Delete;
 import android.arch.persistence.room.Insert;
@@ -17,13 +18,19 @@ public interface MovieDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     void insertMultipleMovies(List<Movies> moviesList);
 
-    @Query("SELECT * FROM Movies WHERE movieId = :movieId")
+    @Query("SELECT * FROM movies WHERE movieId = :movieId")
     Movies fetchMoviesByMovieId(String movieId);
 
-    @Query("SELECT * FROM Movies")
+    @Query("SELECT * FROM movies")
     List<Movies> fetchAllMovies();
 
-    @Query("SELECT COUNT(*) FROM Movies")
+    @Query("SELECT * FROM movies")
+    LiveData<List<Movies>> getAllMovies();
+
+    @Query("SELECT * FROM movies WHERE movieId = :movieId")
+    LiveData<Movies> getMovieById(String movieId);
+
+    @Query("SELECT COUNT(*) FROM movies")
     Long count();
 
     @Delete
