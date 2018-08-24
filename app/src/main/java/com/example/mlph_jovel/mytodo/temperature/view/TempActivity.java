@@ -26,7 +26,6 @@ public class TempActivity extends AppCompatActivity {
     private void initDataBinding() {
         ActivityTempBinding binding = DataBindingUtil.setContentView(this, R.layout.activity_temp);
         tempViewModel = ViewModelProviders.of(this).get(TempViewModel.class);
-        tempViewModel.init(this);
         binding.setTemp(tempViewModel);
     }
 

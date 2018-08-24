@@ -107,6 +107,7 @@ public class MainActivity extends AppCompatActivity
         rvMovies.setAdapter(adapter);
 
         moviesViewModel = ViewModelProviders.of(this).get(MoviesViewModel.class);
+        moviesViewModel.init(this);
         moviesViewModel.getMovies().observe(this, movies -> {
             moviesList.clear();
             moviesList.addAll(movies);

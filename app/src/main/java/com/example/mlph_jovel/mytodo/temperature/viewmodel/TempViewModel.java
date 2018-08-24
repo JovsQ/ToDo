@@ -1,29 +1,36 @@
 package com.example.mlph_jovel.mytodo.temperature.viewmodel;
 
+import android.app.Application;
+import android.arch.lifecycle.AndroidViewModel;
 import android.arch.lifecycle.ViewModel;
-import android.content.Context;
 import android.databinding.ObservableBoolean;
 import android.databinding.ObservableField;
+import android.support.annotation.NonNull;
 import android.widget.Toast;
 
-public class TempViewModel extends ViewModel {
+public class TempViewModel extends AndroidViewModel{
 
     public ObservableField<String> input;
+    public ObservableField<String> result;
     public ObservableBoolean buttonEnabled;
-    private Context context;
-    private int counter;
 
+    public Application application;
 
-    public void init(Context context) {
-        counter = 0;
+    public TempViewModel(@NonNull Application application) {
+        super(application);
+        this.application = application;
         input = new ObservableField<>();
+        result = new ObservableField<>();
         buttonEnabled = new ObservableBoolean();
-        this.context = context;
+        buttonEnabled.set(false);
+    }
+
+    public void inputChanged() {
+        buttonEnabled.set(input.get().length() > 4);
     }
 
     public void buttonClicked() {
-        counter++;
-        input.set("clicked: " + counter);
+        Toast.makeText(application, "Clicked: " + input.get(), Toast.LENGTH_LONG).show();
+        result.set(input.get());
     }
-
 }

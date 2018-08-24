@@ -8,6 +8,7 @@
             name="temp"
             type="com.example.mlph_jovel.mytodo.temperature.viewmodel.TempViewModel"/>
         <import type="android.view.View"/>
+        <import type="android.support.v4.content.ContextCompat" />
     </data>
 
     <android.support.constraint.ConstraintLayout
@@ -15,27 +16,41 @@
         android:layout_height="match_parent"
         tools:context=".temperature.view.TempActivity">
 
-        <TextView
-            android:id="@+id/tv_display"
+
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="@{temp.input}"
-            tools:text="@string/app_name"
-            android:gravity="center"
+            android:orientation="vertical"
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintLeft_toLeftOf="parent"
-            app:layout_constraintRight_toRightOf="parent"/>
+            app:layout_constraintVertical_bias=".5">
 
-        <Button
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Click Here"
-            android:onClick="@{() -> temp.buttonClicked()}"
-            app:layout_constraintTop_toBottomOf="@id/tv_display"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintLeft_toLeftOf="parent"
-            app:layout_constraintRight_toRightOf="parent"/>
+            <EditText
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_margin="10dp"
+                android:hint="Enter message here"
+                android:text="@={temp.input}"
+                android:singleLine="true"
+                android:afterTextChanged="@{() -> temp.inputChanged()}"/>
+
+            <Button
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Click Here"
+                android:onClick="@{() -> temp.buttonClicked()}"
+                android:enabled="@{temp.buttonEnabled}"
+                android:layout_margin="10dp"/>
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@{temp.result}"
+                tools:text="@string/app_name"
+                android:gravity="center"/>
+
+        </LinearLayout>
 
     </android.support.constraint.ConstraintLayout>
 
