@@ -2,6 +2,7 @@ package com.example.mlph_jovel.mytodo.movies.view;
 
 import android.arch.lifecycle.ViewModelProviders;
 import android.content.Context;
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.NavigationView;
@@ -28,6 +29,7 @@ import com.example.mlph_jovel.mytodo.R;
 import com.example.mlph_jovel.mytodo.database.AppDatabase;
 import com.example.mlph_jovel.mytodo.movies.model.Movies;
 import com.example.mlph_jovel.mytodo.movies.viewmodel.MoviesViewModel;
+import com.example.mlph_jovel.mytodo.temperature.view.TempActivity;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -182,7 +184,8 @@ public class MainActivity extends AppCompatActivity
                 saveMovie();
                 break;
             case R.id.fab:
-                showSnackBar(v, "Replace with action");
+//                showSnackBar(v, "Replace with action");
+                startActivity(new Intent(MainActivity.this, TempActivity.class));
                 break;
         }
     }
